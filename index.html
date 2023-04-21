@@ -134,9 +134,7 @@
         <button name="autoset" id="autoset"><b>AutoSettings</b></button>
         <span style="margin: 0 50px;"></span> <!-- added span with margin to create space between buttons -->
         <button name="add" id="add"><b>Add NEW</b></button>
-
-
-    </div>
+</div>
     <form_header id="aaaaaaa" style="justify-content: space-evenly;">
         <span style="margin: 0 1px;"></span><!-- added span with margin to create space between buttons -->
         <button name="Symbol" id="header_name">SYMBOL</button>
@@ -182,8 +180,8 @@
         symbols[''] = {
             'quantity': qnty,
             'addition': '1',
-            'take': '1',
-            'stop': qnty,
+            'take': '2',
+            'stop': '5',
             'trend': 'buy',
         }
 
@@ -237,8 +235,7 @@
         let inputStop //= document.createElement("input");
         let inputTrend ///= document.createElement("select");
         let buttonSubmit //= document.createElement("button");
-
-        function create_form(word, dic_work, percent = 10) {
+ function create_form(word, dic_work, percent = 10) {
 
             form = document.createElement("form");
             inputSymbol = document.createElement("select",);
@@ -306,7 +303,7 @@
             inputStop.setAttribute("type", "text");
             inputStop.setAttribute("id", "form." + index + "-stop");
             inputStop.setAttribute("name", "Stop");
-            inputStop.setAttribute("value", 5);
+            inputStop.setAttribute("value", dic_work[word]['stop']);
 
             inputStop.setAttribute("size", "2");
 
@@ -329,8 +326,7 @@
 
                 form.remove();
             }
-
-            inputSymbol.onchange = async function (e) {
+inputSymbol.onchange = async function (e) {
                 e.preventDefault();
                 symbol_work = e.target.id.split('.')[1];
                 console.log(e.target.id.split('.')[1]);
