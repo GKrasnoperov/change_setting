@@ -235,7 +235,7 @@
         let inputStop //= document.createElement("input");
         let inputTrend ///= document.createElement("select");
         let buttonSubmit //= document.createElement("button");
- function create_form(word, dic_work, percent = 10) {
+        function create_form(word, dic_work, percent = 10) {
 
             form = document.createElement("form");
             inputSymbol = document.createElement("select",);
@@ -326,7 +326,7 @@
 
                 form.remove();
             }
-inputSymbol.onchange = async function (e) {
+            inputSymbol.onchange = async function (e) {
                 e.preventDefault();
                 symbol_work = e.target.id.split('.')[1];
                 console.log(e.target.id.split('.')[1]);
