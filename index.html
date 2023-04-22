@@ -8,6 +8,13 @@
     <title>Настройки</title>
     <style>
 
+        .select2-results__option {
+            color: black;
+        }
+        .select2-search__field {
+            width: 80px;
+        }
+        
         #auto_set {
             background-color: #91c1ec;
             border: 2px solid #808080;
@@ -77,9 +84,9 @@
             /*background: var(--tg-theme-button-color);*/
             /*color: var(--tg-theme-button-text-color);*/
             border: none;
-            font-size: 14px;
+            font-size: 15px;
             min-width: 40px;
-            max-width: 105px;
+            max-width: 90px;
             width: auto;
             -webkit-appearance: none;
         }
@@ -99,7 +106,7 @@
             padding: 0px;
             /*border: 1px solid #000;*/
             border-radius: 5px;
-            box-shadow: 0 0 8px #800080;
+            box-shadow: 0 0 8px #C0C0C0;
             margin: 4px;
             max-width: 100%;
         }
@@ -111,7 +118,7 @@
             flex-wrap: nowrap;
             display: flex;
             flex-direction: row;
-            align-items: center;
+            align-items: left;
             font-size: 19px;
             justify-content: space-between;
             padding: 0px;
@@ -134,21 +141,22 @@
         <button name="autoset" id="autoset"><b>AutoSettings</b></button>
         <span style="margin: 0 50px;"></span> <!-- added span with margin to create space between buttons -->
         <button name="add" id="add"><b>Add NEW</b></button>
-</div>
-    <form_header id="aaaaaaa" style="justify-content: space-evenly;">
-        <span style="margin: 0 1px;"></span><!-- added span with margin to create space between buttons -->
-        <button name="Symbol" id="header_name">SYMBOL</button>
-        <span style="margin: 0 10px;"></span><!-- added span with margin to create space between buttons -->
-        <button name="Vol" id="header_name">VOL</button>
-        <span style="margin: 0 5px;"></span><!-- added span with margin to create space between buttons -->
-        <button name="add" id="header_name">TAKE</button>
-        <span style="margin: 0 0px;"></span><!-- added span with margin to create space between buttons -->
-        <button name="take" id="header_name">STOP</button>
 
-        <button name="stop" id="header_name">INTERVAL</button>
+
+    </div>
+    <form_header id="aaaaaaa" style="justify-content: space-evenly;">
+        <button name="Symbol" id="header_name">SYMBOL</button>
+        <span style="margin: 0 6px;"></span><!-- added span with margin to create space between buttons -->
+        <button name="Vol" id="header_name">VOL</button>
+        <span id ="span2" style="margin: 0 8px;"></span><!-- added span with margin to create space between buttons -->
+        <button name="add" id="header_name">%</button>
+        <span style="margin: 0 2px;"></span><!-- added span with margin to create space between buttons -->
+        <button name="take" id="header_name">TAKE</button>
+
+        <button name="stop" id="header_name">STOP</button>
 
         <button name="trend" id="header_name">TREND</button>
-        <span style="margin: 0 1px;"></span><!-- added span with margin to create space between buttons -->
+        <span style="margin: 0 22px;"></span><!-- added span with margin to create space between buttons -->
     </form_header>
     <script>
         let tg = window.Telegram.WebApp;
@@ -169,21 +177,38 @@
         let symbols = {};
         let dctnr;
         let dctnr2;
-        let qnty = Math.round(balance * 0.1);
+        let qnty;
         let index = 1;
+        let min_qnty;
+        let take;
+        let stop;
+        
 
         document.getElementById("connector").innerHTML = connector;
         document.getElementById("connector").setAttribute("style", "margin-top:0; display:inline-block;");
         document.getElementById("robot").innerHTML = robot + ' Setup';
         document.getElementById("robot").setAttribute("style", "margin-top:0; display:inline-block;");
-              
-        symbols[''] = {
-            'quantity': qnty,
-            'addition': '1',
-            'take': '2',
-            'stop': '5',
-            'trend': 'buy',
+
+        if (robot != 'Stepbystep') {
+            var buttons = document.getElementsByTagName('button');
+            for (var i = 0; i < buttons.length; i++) {
+                var button = buttons[i];
+                if (button.textContent == "%") { button.textContent = "TAKE" }
+                else if (button.textContent == "TAKE") {
+                    button.textContent = "STOP";
+                }
+                else if (button.textContent == "STOP") { button.textContent = "INTERVAL" }
+            }
+            
         }
+
+        if (connector == 'Binance') { min_qnty = 8 }
+        else if (connector == 'Bybit') { min_qnty = 2 }
+        qnty = Math.round(balance * 0.1);
+
+        if (qnty < min_qnty) { qnty = min_qnty };
+
+
 
         if (dic_param1 === null) {
             dctnr = {};
@@ -203,29 +228,51 @@
                 'addition': elem[2],
                 'take': elem[3],
                 'stop': elem[4],
-                'trend': elem[5],
+                'trend': elem[5].toLocaleLowerCase(),
             }
         }
 
         for (var jj in dctnr2) {
             var elem = dctnr2[jj].split('-');
             addition = round_ten(elem[1] / 20);
-            take = round_ten(addition * 2);
-            if (addition < 1) {
-                addition = 1;
-                take = 2;
-            };
-            trend = elem[2];
+            if (robot == 'Stepbystep') {
+                
+                take = round_ten(addition * 0.9);
+                if (addition < 1) {
+                    addition = 1.1;
+                    take = 1;
+                    stop = qnty;
+                };
+            }
+            else {
+                take = addition * 2;
+                if (addition < 1) {
+                    addition = 1;
+                    take = 2;
+                    stop = 5
+
+                };
+            }
+            trend = elem[2].toLocaleLowerCase();
             quantity = Math.round(balance * 0.1);
             symbols[elem[0]] = {
-                'quantity': quantity,
+                'quantity': qnty,
                 'addition': addition,
                 'take': take,
-                'stop': 5,
+                'stop': stop,
                 'trend': trend,
             }
         }
 
+        symbols[''] = {
+            'quantity': qnty,
+            'addition': '1',
+            'take': '2',
+            'stop': stop,
+            'trend': 'buy',
+        }
+        console.log(symbols)
+        console.log(dictionary)
         let trend_dic = ['buy', 'sell', 'reverse'];
         let form 
         let inputSymbol 
@@ -235,6 +282,7 @@
         let inputStop //= document.createElement("input");
         let inputTrend ///= document.createElement("select");
         let buttonSubmit //= document.createElement("button");
+
         function create_form(word, dic_work, percent = 10) {
 
             form = document.createElement("form");
@@ -291,19 +339,24 @@
             inputAditional.setAttribute("type", "text");
             inputAditional.setAttribute("id", "form." + index + "-aditional");
             inputAditional.setAttribute("name", "Aditional");
-            inputAditional.setAttribute("value", dic_work[word]['additional']);
+            inputAditional.setAttribute("value", dic_work[word]['addition'])
             inputAditional.setAttribute("size", "2");
 
             inputTake.setAttribute("type", "text");
             inputTake.setAttribute("id", "form." + index + "-take");
             inputTake.setAttribute("name", "Take");
-            inputTake.setAttribute("value", dic_work[word]['take'])
+            inputTake.setAttribute("value", dic_work[word]['take']) 
             inputTake.setAttribute("size", "2");
 
             inputStop.setAttribute("type", "text");
             inputStop.setAttribute("id", "form." + index + "-stop");
             inputStop.setAttribute("name", "Stop");
-            inputStop.setAttribute("value", dic_work[word]['stop']);
+            if (percent != 10) {
+                inputStop.setAttribute("value", Math.round(balance * percent / 100));
+            }
+            else {
+                inputStop.setAttribute("value", Math.round(dic_work[word]['stop']));
+            }
 
             inputStop.setAttribute("size", "2");
 
@@ -326,14 +379,11 @@
 
                 form.remove();
             }
+
             inputSymbol.onchange = async function (e) {
                 e.preventDefault();
                 symbol_work = e.target.id.split('.')[1];
-                console.log(e.target.id.split('.')[1]);
                 word = document.getElementById(e.target.id).value;
-                console.log(word);
-                console.log(symbols[word]['addition']);
-                console.log("form" + symbol_work + "-aditional");
                 document.getElementById("form." + symbol_work + "-aditional").value = symbols[word]['addition'];
                 document.getElementById("form." + symbol_work + "-take").value = symbols[word]['take'];
                 document.getElementById("form." + symbol_work + "-trend").value = symbols[word]['trend'];
